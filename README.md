@@ -8,6 +8,8 @@ A typing speed test web app inspired by the aesthetics of Japanese ukiyo-e art a
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-blue?logo=tailwindcss)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
+![](./zentype.png)
+
 ## Features
 
 **Test Modes**
