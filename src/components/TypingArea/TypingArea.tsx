@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSettingsStore } from '../../stores/settingsStore'
 import type { TypingViewState } from '../../hooks/useTypingEngine'
@@ -19,7 +19,7 @@ const FONT_SIZE_MAP = {
 const LINE_HEIGHT = 'leading-[2.6em]'
 const WORDS_PER_LINE = 9
 
-// Single word rendering — memoized so it only re-renders when its own data changes
+// Single word rendering — memoized
 const WordSpan = React.memo(function WordSpan({
   word,
   isCurrentWord,
@@ -84,15 +84,19 @@ export const TypingArea: React.FC<TypingAreaProps> = ({ viewState, testState }) 
   const { blindMode, fontSize } = useSettingsStore()
   const { words, currentWordIndex, typedWord } = viewState
 
-  // Windowed rendering: show 3 lines around current position
+  // Track which display-line we're on to animate when it scrolls
+  const currentLine = Math.floor(currentWordIndex / WORDS_PER_LINE)
+  const prevLineRef = useRef(currentLine)
+  const lineChanged = currentLine !== prevLineRef.current
+  if (lineChanged) prevLineRef.current = currentLine
+
   const VISIBLE_LINES = 3
   const visibleSlice = useMemo(() => {
-    const currentLine = Math.floor(currentWordIndex / WORDS_PER_LINE)
     const startLine = Math.max(0, currentLine - 1)
     const startIdx = startLine * WORDS_PER_LINE
     const endIdx = Math.min(words.length, (startLine + VISIBLE_LINES) * WORDS_PER_LINE)
     return { words: words.slice(startIdx, endIdx), offset: startIdx }
-  }, [words, currentWordIndex])
+  }, [words, currentLine])
 
   if (words.length === 0) return null
 
@@ -105,7 +109,12 @@ export const TypingArea: React.FC<TypingAreaProps> = ({ viewState, testState }) 
       )}
       style={{ color: 'var(--subtext)' }}
     >
-      <div
+      {/* Use currentLine as key so the word block animates in when lines scroll */}
+      <motion.div
+        key={Math.max(0, currentLine - 1)}
+        initial={lineChanged ? { opacity: 0.6, y: 6 } : false}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.18, ease: 'easeOut' }}
         className="flex flex-wrap gap-x-[0.6em] gap-y-0 overflow-hidden"
         style={{ maxHeight: `calc(2.6em * ${VISIBLE_LINES})` }}
       >
@@ -125,7 +134,7 @@ export const TypingArea: React.FC<TypingAreaProps> = ({ viewState, testState }) 
             />
           )
         })}
-      </div>
+      </motion.div>
 
       {/* Idle hint */}
       <AnimatePresence>

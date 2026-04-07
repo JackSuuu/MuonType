@@ -109,7 +109,6 @@ export const Results: React.FC<ResultsProps> = ({ result, onRestart, onNewTest }
             <div className={stat.highlight ? 'stat-value' : 'font-mono font-bold text-2xl'}
               style={{
                 color: stat.color || (stat.highlight ? 'var(--primary)' : 'var(--text)'),
-                textShadow: stat.highlight ? '0 0 20px var(--primary)' : undefined,
               }}
             >
               {stat.value}
